@@ -404,3 +404,6 @@ def run_bot(username):
 if __name__ == "__main__":
     run_bot(channel)
     # input("Press Enter to exit...\n")
+    # Keep main thread alive forever
+    while True:
+        time.sleep(3600)
