@@ -198,9 +198,11 @@ def get_youtube_chat(channel_name, sock: str):
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
         else:
-            flow = InstalledAppFlow.from_client_secrets_file(
-                'D:/Twitch bot/Twitch IRC/credentials.json', SCOPES
-            )
+            youtube_json = json.loads(os.getenv("YOUTUBE_CREDENTIALS"))
+            flow = InstalledAppFlow.from_client_config(youtube_json, SCOPES)
+            #flow = InstalledAppFlow.from_client_secrets_file(
+                #'D:/Twitch bot/Twitch IRC/credentials.json', SCOPES
+            #)
             creds = flow.run_local_server(port=0)
 
         save_token_to_firebase(creds, channel_name)
