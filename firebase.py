@@ -2,6 +2,8 @@
 import time
 import firebase_admin
 import dateutil.parser  # Install with `pip install python-dateutil`
+import json
+import os
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -9,7 +11,9 @@ from firebase_admin import firestore
 from firebase_admin import credentials, db
 
 # Initialize Firebase (only once)
-cred = credentials.Certificate(r'D:\Twitch bot\Twitch IRC\serviceaccountkeyregen.json')
+# cred = credentials.Certificate(r'D:\Twitch bot\Twitch IRC\serviceaccountkeyregen.json')
+firebase_json = json.loads(os.getenv("FIREBASE_SERVICE_ACCOUNT"))
+cred = credentials.Certificate(firebase_json)
 firebase_admin.initialize_app(cred, {
     'databaseURL': 'https://arenatracker-a9066-default-rtdb.firebaseio.com'
 })
