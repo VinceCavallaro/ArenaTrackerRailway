@@ -5,13 +5,13 @@ import time
 import json
 from googleapiclient.errors import HttpError
 from googleapiclient.discovery import build
-from dotenv import load_dotenv
+#from dotenv import load_dotenv
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from firebase import ensure_twitch_channel_exists, remove_user_from_channel, remove_current_user, add_user_to_firebase, get_user_list, nextOpponent, save_token_to_firebase, load_token_from_firebase, clear_user_list, open_list, close_list, update_list_limit, get_sub_mode, update_sub_mode
 
-load_dotenv()
+#load_dotenv()
 
 # YouTube API setup
 YOUTUBE_API_SERVICE_NAME = "youtube"
