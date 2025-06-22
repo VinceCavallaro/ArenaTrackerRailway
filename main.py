@@ -238,7 +238,7 @@ def get_youtube_chat(channel_name, sock: str):
         print("No active live broadcast with chat found.")
         with youtube_channel_state_lock:
             youtube_channel_state[channel_name] = {"is_live": False}
-        input("Press Enter to exit...")
+        # input("Press Enter to exit...")
         return
 
     print(f"Connected to YouTube chat for channel: {channel_name}")
