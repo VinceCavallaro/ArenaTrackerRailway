@@ -20,7 +20,7 @@ SCOPES = ["https://www.googleapis.com/auth/youtube.force-ssl"]
 
 thread_local_state = threading.local()
 
-thread_local_state.youtube_thread = None
+# thread_local_state.youtube_thread = None
 youtube_channel_state = {}
 youtube_channel_state_lock = threading.Lock()
 
@@ -189,7 +189,7 @@ def listen_to_twitch(sock, channel):
 
 # Get YouTube chat messages
 def get_youtube_chat(channel_name, sock: str):
-    thread_local_state.is_channel_live = False
+    # thread_local_state.is_channel_live = False
     
     # Use the Twitch username as the Firebase key
     creds = load_token_from_firebase(channel_name)
@@ -357,7 +357,9 @@ def get_youtube_chat(channel_name, sock: str):
             error_content = e.content.decode('utf-8') if hasattr(e.content, 'decode') else str(e)
             if 'liveChatEnded' in error_content:
                 print(f"YouTube live chat for {channel_name} is no longer live.")
-                thread_local_state.is_channel_live = False
+                # thread_local_state.is_channel_live = False
+                with youtube_channel_state_lock:
+                    youtube_channel_state[channel_name] = {"is_live": False}
                 break
             else:
                 print(f"HttpError while fetching YouTube chat: {e}")
