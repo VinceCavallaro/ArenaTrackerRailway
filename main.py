@@ -92,100 +92,114 @@ def extract_message(resp):
         return None
 
 def listen_to_twitch(sock, channel):
-    while True:
-        resp = sock.recv(2048).decode('utf-8')
-        if resp.startswith("PING"):
-            sock.send("PONG :tmi.twitch.tv\n".encode('utf-8'))
-        elif "PRIVMSG" in resp:
-            tags = extract_tags(resp)
-            mod_status = tags.get('mod', '0')
-            is_streamer = False
-            username = tags.get('display-name', extract_details(resp))
-            message = extract_message(resp)
-            sub_status = tags.get('subscriber', extract_details(resp))
-            #print(resp)
-            print(f"Mod: {mod_status} | Subscriber: {sub_status} | User: {username}@{channel} | Msg: {message}")
-            if username == channel.lstrip('#'):
-                is_streamer = True
-
-            if message.strip().lower() == "!hello":
-                response = f"Hello {username}, welcome to the stream!"
-                sock.send(f"PRIVMSG {channel} :{response}\r\n".encode('utf-8'))
-            elif message.lower().startswith("!join"):
-                if get_sub_mode(channel.lstrip('#')) == 1:
-                    if int(sub_status) == 1:
-                        response = add_user_to_firebase(channel.lstrip('#'), username, "Twitch", True)
-                    else:
-                        response = "You cannot join the list while not a Twitch Subscriber during Subscriber Only mode."
-                else:
-                    response = add_user_to_firebase(channel.lstrip('#'), username, "Twitch", True)
-                sock.send(f"PRIVMSG {channel} :{response}\r\n".encode('utf-8'))
-
-            elif message.lower().startswith("!add") and (mod_status == '1' or is_streamer):
-                parts = message.split(" ", 1)
-                target_user = parts[1].strip() if len(parts) > 1 else username
-                response = add_user_to_firebase(channel.lstrip('#'), target_user, "Twitch", False)
-                sock.send(f"PRIVMSG {channel} :{response}\r\n".encode('utf-8'))
-            elif message.lower().startswith("!remove") and (mod_status == '1' or is_streamer):
-                parts = message.split(" ", 1)
-                if len(parts) == 1:
-                    # No target user provided
-                    response = "Please specify a user to remove. Usage: !remove username"
-                else:
-                    target_user = parts[1].strip()
-                    response = remove_user_from_channel(channel.lstrip('#'), target_user)
-
-                sock.send(f"PRIVMSG {channel} :{response}\r\n".encode('utf-8'))
-            elif message.strip().lower() == "!clear" and is_streamer:
-                response = clear_user_list(channel.lstrip('#'))
-                sock.send(f"PRIVMSG {channel} :{response}\r\n".encode('utf-8'))
-            elif message.strip().lower() == "!leave":
-                if remove_current_user(channel.lstrip('#'), username):
-                    sock.send(f"PRIVMSG {channel} :You have been removed from the list, {username}.\r\n".encode('utf-8'))
-            elif message.strip().lower() == "!next" and is_streamer:
-                response = nextOpponent(channel.lstrip('#'))
-                sock.send(f"PRIVMSG {channel} :{response}\r\n".encode('utf-8'))
-            elif message.strip().lower() == "!list":
-                response = get_user_list(channel.lstrip('#'))
-                sock.send(f"PRIVMSG {channel} :{response}\r\n".encode('utf-8'))
-            elif message.strip().lower() == "!connect" and channel == "#ArenaTracker":
-                tUsername = "#" + username
-                run_bot(tUsername)
-            elif message.strip().lower() == "!connectyoutube":
-                start_youtube_listener(channel.lstrip('#'), sock)
-            elif message.strip().lower() == "!open" and is_streamer:
-                response = open_list(channel.lstrip('#'))
-                sock.send(f"PRIVMSG {channel} :{response}\r\n".encode('utf-8'))
-            elif message.strip().lower() == "!close" and is_streamer:
-                response = close_list(channel.lstrip('#'))
-                sock.send(f"PRIVMSG {channel} :{response}\r\n".encode('utf-8'))
-            elif message.lower().startswith("!submode") and (mod_status == '1' or is_streamer):
-                parts = message.split(" ", 1)
-                if len(parts) == 1:
-                    # No submode provided
-                    response = "Please enter either 0 or 1 after !submode. 0 disables sub only mode, 1 enables sub only mode."
-                else:
-                    try:
-                        option = int(parts[1].strip())
-                        response = update_sub_mode(channel.lstrip('#'), option)
-                    except ValueError:
-                        response = "Please enter either 0 or 1 after !submode. 0 disables sub only mode, 1 enables sub only mode."
-                sock.send(f"PRIVMSG {channel} :{response}\r\n".encode('utf-8'))
-            elif message.lower().startswith("!limit") and (mod_status == '1' or is_streamer):
-                parts = message.split(" ", 1)
-                if len(parts) == 1:
-                    # No limit provided
-                    response = "Please specify a number to set the max limit of the list. Usage: !limit (number)."
-                else:
-                    try:
-                        limit = int(parts[1].strip())
-                        if limit > 0:
-                            response = update_list_limit(channel.lstrip('#'), limit)
+    last_heartbeat = time.time()
+    
+    try:    
+        while True:
+            resp = sock.recv(2048).decode('utf-8')
+            if resp.startswith("PING"):
+                sock.send("PONG :tmi.twitch.tv\n".encode('utf-8'))
+            elif "PRIVMSG" in resp:
+                tags = extract_tags(resp)
+                mod_status = tags.get('mod', '0')
+                is_streamer = False
+                username = tags.get('display-name', extract_details(resp))
+                message = extract_message(resp)
+                sub_status = tags.get('subscriber', extract_details(resp))
+                #print(resp)
+                print(f"Mod: {mod_status} | Subscriber: {sub_status} | User: {username}@{channel} | Msg: {message}")
+                if username == channel.lstrip('#'):
+                    is_streamer = True
+    
+                if message.strip().lower() == "!hello":
+                    response = f"Hello {username}, welcome to the stream!"
+                    sock.send(f"PRIVMSG {channel} :{response}\r\n".encode('utf-8'))
+                elif message.lower().startswith("!join"):
+                    if get_sub_mode(channel.lstrip('#')) == 1:
+                        if int(sub_status) == 1:
+                            response = add_user_to_firebase(channel.lstrip('#'), username, "Twitch", True)
                         else:
-                            response = "Limit must be a positive number greater than 0"
-                    except ValueError:
-                        response = "Argument invalid. Please enter a number after !limit."
-                sock.send(f"PRIVMSG {channel} :{response}\r\n".encode('utf-8'))
+                            response = "You cannot join the list while not a Twitch Subscriber during Subscriber Only mode."
+                    else:
+                        response = add_user_to_firebase(channel.lstrip('#'), username, "Twitch", True)
+                    sock.send(f"PRIVMSG {channel} :{response}\r\n".encode('utf-8'))
+    
+                elif message.lower().startswith("!add") and (mod_status == '1' or is_streamer):
+                    parts = message.split(" ", 1)
+                    target_user = parts[1].strip() if len(parts) > 1 else username
+                    response = add_user_to_firebase(channel.lstrip('#'), target_user, "Twitch", False)
+                    sock.send(f"PRIVMSG {channel} :{response}\r\n".encode('utf-8'))
+                elif message.lower().startswith("!remove") and (mod_status == '1' or is_streamer):
+                    parts = message.split(" ", 1)
+                    if len(parts) == 1:
+                        # No target user provided
+                        response = "Please specify a user to remove. Usage: !remove username"
+                    else:
+                        target_user = parts[1].strip()
+                        response = remove_user_from_channel(channel.lstrip('#'), target_user)
+    
+                    sock.send(f"PRIVMSG {channel} :{response}\r\n".encode('utf-8'))
+                elif message.strip().lower() == "!clear" and is_streamer:
+                    response = clear_user_list(channel.lstrip('#'))
+                    sock.send(f"PRIVMSG {channel} :{response}\r\n".encode('utf-8'))
+                elif message.strip().lower() == "!leave":
+                    if remove_current_user(channel.lstrip('#'), username):
+                        sock.send(f"PRIVMSG {channel} :You have been removed from the list, {username}.\r\n".encode('utf-8'))
+                elif message.strip().lower() == "!next" and is_streamer:
+                    response = nextOpponent(channel.lstrip('#'))
+                    sock.send(f"PRIVMSG {channel} :{response}\r\n".encode('utf-8'))
+                elif message.strip().lower() == "!list":
+                    response = get_user_list(channel.lstrip('#'))
+                    sock.send(f"PRIVMSG {channel} :{response}\r\n".encode('utf-8'))
+                elif message.strip().lower() == "!connect" and channel == "#ArenaTracker":
+                    tUsername = "#" + username
+                    run_bot(tUsername)
+                elif message.strip().lower() == "!connectyoutube":
+                    start_youtube_listener(channel.lstrip('#'), sock)
+                elif message.strip().lower() == "!open" and is_streamer:
+                    response = open_list(channel.lstrip('#'))
+                    sock.send(f"PRIVMSG {channel} :{response}\r\n".encode('utf-8'))
+                elif message.strip().lower() == "!close" and is_streamer:
+                    response = close_list(channel.lstrip('#'))
+                    sock.send(f"PRIVMSG {channel} :{response}\r\n".encode('utf-8'))
+                elif message.lower().startswith("!submode") and (mod_status == '1' or is_streamer):
+                    parts = message.split(" ", 1)
+                    if len(parts) == 1:
+                        # No submode provided
+                        response = "Please enter either 0 or 1 after !submode. 0 disables sub only mode, 1 enables sub only mode."
+                    else:
+                        try:
+                            option = int(parts[1].strip())
+                            response = update_sub_mode(channel.lstrip('#'), option)
+                        except ValueError:
+                            response = "Please enter either 0 or 1 after !submode. 0 disables sub only mode, 1 enables sub only mode."
+                    sock.send(f"PRIVMSG {channel} :{response}\r\n".encode('utf-8'))
+                elif message.lower().startswith("!limit") and (mod_status == '1' or is_streamer):
+                    parts = message.split(" ", 1)
+                    if len(parts) == 1:
+                        # No limit provided
+                        response = "Please specify a number to set the max limit of the list. Usage: !limit (number)."
+                    else:
+                        try:
+                            limit = int(parts[1].strip())
+                            if limit > 0:
+                                response = update_list_limit(channel.lstrip('#'), limit)
+                            else:
+                                response = "Limit must be a positive number greater than 0"
+                        except ValueError:
+                            response = "Argument invalid. Please enter a number after !limit."
+                    sock.send(f"PRIVMSG {channel} :{response}\r\n".encode('utf-8'))
+                # 🔁 Send a keep-alive message every 30 minutes
+            if time.time() - last_heartbeat >= 1800:
+                try:
+                    sock.send(f"PRIVMSG {channel} :\u2800\r\n".encode('utf-8'))  # Replace "." with invisible char if preferred
+                    print(f"[KeepAlive] Sent heartbeat to {channel}")
+                except Exception as e:
+                    print(f"[KeepAlive Error] {e}")
+                last_heartbeat = time.time()
+    
+    except Exception as e:
+        print(f"[Twitch Listener Disconnected] {e}")
 
 # Get YouTube chat messages
 def get_youtube_chat(channel_name, sock: str):
