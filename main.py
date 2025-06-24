@@ -98,6 +98,7 @@ def listen_to_twitch(sock, channel):
         while True:
             resp = sock.recv(2048).decode('utf-8')
             if resp.startswith("PING"):
+                print("Received PING from Twitch. Sending PONG.")
                 sock.send("PONG :tmi.twitch.tv\n".encode('utf-8'))
             elif "PRIVMSG" in resp:
                 tags = extract_tags(resp)
