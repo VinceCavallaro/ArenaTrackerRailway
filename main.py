@@ -191,13 +191,13 @@ def listen_to_twitch(sock, channel):
                             response = "Argument invalid. Please enter a number after !limit."
                     sock.send(f"PRIVMSG {channel} :{response}\r\n".encode('utf-8'))
                 # 🔁 Send a keep-alive message every 30 minutes
-            if time.time() - last_heartbeat >= 1800:
-                try:
-                    sock.send(f"PRIVMSG {channel} :\u2800\r\n".encode('utf-8'))  # Replace "." with invisible char if preferred
-                    print(f"[KeepAlive] Sent heartbeat to {channel}")
-                except Exception as e:
-                    print(f"[KeepAlive Error] {e}")
-                last_heartbeat = time.time()
+            #if time.time() - last_heartbeat >= 1800:
+                #try:
+                    #sock.send(f"PRIVMSG {channel} :\u2800\r\n".encode('utf-8'))  # Replace "." with invisible char if preferred
+                    #print(f"[KeepAlive] Sent heartbeat to {channel}")
+                #except Exception as e:
+                    #print(f"[KeepAlive Error] {e}")
+                #last_heartbeat = time.time()
     
     except Exception as e:
         print(f"[Twitch Listener Disconnected] {e}")
