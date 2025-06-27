@@ -127,9 +127,10 @@ def listen_to_twitch(sock, channel):
     
                 elif message.lower().startswith("!add") and (mod_status == '1' or is_streamer):
                     parts = message.split(" ", 1)
-                    target_user = parts[1].strip() if len(parts) > 1 else username
-                    response = add_user_to_firebase(channel.lstrip('#'), target_user, "Twitch", False)
-                    sock.send(f"PRIVMSG {channel} :{response}\r\n".encode('utf-8'))
+                    if parts[0] == "!add": # Accept strictly !add, not other things such as !addcom (nightbot command)
+                        target_user = parts[1].strip() if len(parts) > 1 else username
+                        response = add_user_to_firebase(channel.lstrip('#'), target_user, "Twitch", False)
+                        sock.send(f"PRIVMSG {channel} :{response}\r\n".encode('utf-8'))
                 elif message.lower().startswith("!remove") and (mod_status == '1' or is_streamer):
                     parts = message.split(" ", 1)
                     if len(parts) == 1:
