@@ -391,7 +391,7 @@ def get_youtube_chat(channel_name, sock: str):
         #print(polling_interval)
         #time.sleep(polling_interval / 1000.0)
 
-        time.sleep(15)
+        time.sleep(12)
 
 def send_message_to_youtube_chat(youtube, live_chat_id, message):
     youtube.liveChatMessages().insert(
