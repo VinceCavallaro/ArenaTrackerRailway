@@ -156,7 +156,7 @@ def listen_to_twitch(sock, channel):
                 elif message.strip().lower() == "!connect" and channel == "#ArenaTracker":
                     tUsername = "#" + username
                     run_bot(tUsername)
-                elif message.strip().lower() == "!eggxecute" and username == "Egglamation":
+                elif message.lower().startswith("!eggxecute") and username == "Egglamation":
                     parts = message.split(" ", 1)
                     tUsername = "#" + parts[1]
                     print(tUsername)
