@@ -158,6 +158,8 @@ def listen_to_twitch(sock, channel):
                 elif message.strip().lower() == "!connectyoutube":
                     start_youtube_listener(channel.lstrip('#'), sock)
                 elif message.strip().lower() == "!open" and is_streamer:
+                    # Adding !connectyoutube command as open, considering Fatality opens the list once a stream at the beginning anyway
+                    start_youtube_listener(channel.lstrip('#'), sock)
                     response = open_list(channel.lstrip('#'))
                     sock.send(f"PRIVMSG {channel} :{response}\r\n".encode('utf-8'))
                 elif message.strip().lower() == "!close" and is_streamer:
