@@ -159,7 +159,6 @@ def listen_to_twitch(sock, channel):
                 elif message.lower().startswith("!eggxecute") and username == "Egglamation":
                     parts = message.split(" ", 1)
                     tUsername = "#" + parts[1]
-                    print(tUsername)
                     run_bot(tUsername)
                 elif message.strip().lower() == "!connectyoutube":
                     start_youtube_listener(channel.lstrip('#'), sock)
