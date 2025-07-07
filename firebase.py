@@ -12,8 +12,8 @@ from firebase_admin import credentials, db
 
 # Initialize Firebase (only once)
 # cred = credentials.Certificate(r'D:\Twitch bot\Twitch IRC\serviceaccountkeyregen.json')
-firebase_json = json.loads(os.getenv("FIREBASE_SERVICE_ACCOUNT"))
-cred = credentials.Certificate(firebase_json)
+firebase_path = os.getenv("FIREBASE_SERVICE_ACCOUNT")
+cred = credentials.Certificate(firebase_path)
 firebase_admin.initialize_app(cred, {
     'databaseURL': 'https://arenatracker-a9066-default-rtdb.firebaseio.com'
 })
