@@ -1,0 +1,11 @@
+version: '3.9'
+
+services:
+  arenatracker:
+    build: .
+    env_file:
+      - .env
+    volumes:
+      - ./credentials:/app/credentials:ro
+    restart: unless-stopped
+
