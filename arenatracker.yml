@@ -3,6 +3,7 @@ version: '3.9'
 services:
   arenatracker:
     build: .
+    container_name: arenatracker
     env_file:
       - .env
     volumes:
