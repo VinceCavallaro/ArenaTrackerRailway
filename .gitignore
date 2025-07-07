@@ -1,0 +1,16 @@
+# Environment variables
+.env
+
+# Credentials directory containing sensitive JSON files
+credentials/
+
+# Python bytecode
+__pycache__/
+*.pyc
+
+# VSCode settings (optional)
+.vscode/
+
+# Docker files if you want to ignore local Docker overrides (optional)
+# docker-compose.override.yml
+
