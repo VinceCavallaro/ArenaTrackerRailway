@@ -3,6 +3,7 @@ import os
 import threading
 import time
 import json
+import traceback
 from googleapiclient.errors import HttpError
 from googleapiclient.discovery import build
 #from dotenv import load_dotenv
@@ -30,6 +31,17 @@ port = 6667
 nickname = "ArenaTracker"
 token = os.getenv("TWITCH_OAUTH")
 channel = f"#{os.getenv('TWITCH_CHANNEL')}"
+
+def thread_with_crash_log(target, *args, **kwargs):
+    def wrapper():
+        try:
+            target(*args, **kwargs)
+        except Exception:
+            print(f"[THREAD CRASHED] {target.__name__} threw an exception:\n{traceback.format_exc()}")
+    t = threading.Thread(target=wrapper)
+    t.daemon = True
+    t.start()
+    return t
 
 # Connect to IRC
 def connect_to_twitch(username):
@@ -417,13 +429,9 @@ def run_bot(username):
     ensure_twitch_channel_exists(channel_name)
 
     twitch_sock = connect_to_twitch(username)
-    twitch_thread = threading.Thread(target=listen_to_twitch, args=(twitch_sock,username))
-    twitch_thread.daemon = True
-    twitch_thread.start()
-
-    youtube_thread = threading.Thread(target=get_youtube_chat, args=(channel_name,twitch_sock))
-    youtube_thread.daemon = True
-    youtube_thread.start()
+    
+    thread_with_crash_log(listen_to_twitch, twitch_sock, username)
+    thread_with_crash_log(get_youtube_chat, channel_name, twitch_sock)
 
 if __name__ == "__main__":
     run_bot(channel)
@@ -431,3 +439,4 @@ if __name__ == "__main__":
     # Keep main thread alive forever
     while True:
         time.sleep(3600)
+
