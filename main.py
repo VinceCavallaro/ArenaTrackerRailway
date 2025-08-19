@@ -106,9 +106,9 @@ def extract_message(resp):
 def listen_to_twitch(sock, channel):
     last_heartbeat = time.time()
 
-    if(channel == "#ArenaTracker"):
-    run_bot("#FatalityFalcon")
-    
+    if channel == "#ArenaTracker":
+        run_bot("#FatalityFalcon")
+
     try:    
         while True:
             resp = sock.recv(2048).decode('utf-8')
