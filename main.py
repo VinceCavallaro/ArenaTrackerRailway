@@ -105,6 +105,9 @@ def extract_message(resp):
 
 def listen_to_twitch(sock, channel):
     last_heartbeat = time.time()
+
+    if(channel == "#ArenaTracker")
+    run_bot("#FatalityFalcon")
     
     try:    
         while True:
@@ -442,4 +445,5 @@ if __name__ == "__main__":
     # Keep main thread alive forever
     while True:
         time.sleep(3600)
+
 
