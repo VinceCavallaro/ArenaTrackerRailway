@@ -437,7 +437,9 @@ def run_bot(username):
     twitch_sock = connect_to_twitch(username)
     
     thread_with_crash_log(listen_to_twitch, twitch_sock, username)
-    thread_with_crash_log(get_youtube_chat, channel_name, twitch_sock)
+    #Commenting out to avoid issues with youtube rejoining on bot restart
+    #Only allow bot to join on !open command (which is kind of the point)
+    #thread_with_crash_log(get_youtube_chat, channel_name, twitch_sock)
 
 if __name__ == "__main__":
     run_bot(channel)
